@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="New Year 2026 Countdown - Synchronized worldwide">
+  <title>New Year 2026 Countdown</title>
+  <style>
+    /* ==========================================================================
+       CSS Custom Properties - Theme Configuration
+       ========================================================================== */
+    :root {
+      /* Colors */
+      --color-bg: #0a0a0f;
+      --color-bg-secondary: #12121a;
+      --color-accent: #d4af37;
+      --color-accent-glow: rgba(212, 175, 55, 0.3);
+      --color-text-primary: #ffffff;
+      --color-text-muted: rgba(255, 255, 255, 0.5);
+      --color-text-label: rgba(255, 255, 255, 0.4);
+      --color-card-bg: rgba(255, 255, 255, 0.03);
+      --color-card-border: rgba(255, 255, 255, 0.08);
+      --color-card-glow: rgba(212, 175, 55, 0.1);
+
+      /* Typography */
+      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display',
+                     'Segoe UI', Roboto, sans-serif;
+      --font-size-number: clamp(3rem, 12vw, 7rem);
+      --font-size-label: clamp(0.65rem, 1.5vw, 0.8rem);
+      --font-size-ambient: clamp(0.8rem, 2vw, 1rem);
+
+      /* Spacing */
+      --spacing-card: clamp(1rem, 4vw, 2.5rem);
+      --spacing-gap: clamp(0.75rem, 3vw, 2rem);
+
+      /* Animation */
+      --transition-fast: 0.2s ease;
+      --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-slow: 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ==========================================================================
+       Base Styles & Reset
+       ========================================================================== */
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--color-bg);
+      color: var(--color-text-primary);
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ==========================================================================
+       Animated Background
+       ========================================================================== */
+    .background {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .background__gradient {
+      position: absolute;
+      inset: -50%;
+      background:
+        radial-gradient(ellipse at 20% 20%, rgba(212, 175, 55, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(212, 175, 55, 0.03) 0%, transparent 70%);
+      animation: gradientDrift 20s ease-in-out infinite;
+    }
+
+    @keyframes gradientDrift {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      25% { transform: translate(2%, 1%) rotate(1deg); }
+      50% { transform: translate(-1%, 2%) rotate(-0.5deg); }
+      75% { transform: translate(-2%, -1%) rotate(0.5deg); }
+    }
+
+    /* Floating Particles */
+    .particles {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .particle {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      animation: float linear infinite;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateY(-10vh) translateX(20px); opacity: 0; }
+    }
+
+    /* ==========================================================================
+       Main Layout
+       ========================================================================== */
+    .container {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    /* ==========================================================================
+       Countdown Component
+       ========================================================================== */
+    .countdown {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-gap);
+      flex-wrap: wrap;
+      max-width: 100%;
+    }
+
+    .countdown__block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-card);
+      min-width: clamp(80px, 20vw, 160px);
+      background: var(--color-card-bg);
+      border: 1px solid var(--color-card-border);
+      border-radius: 16px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      position: relative;
+      transition: var(--transition-smooth);
+      cursor: default;
+    }
+
+    .countdown__block::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 17px;
+      background: linear-gradient(135deg,
+        rgba(212, 175, 55, 0.2) 0%,
+        transparent 50%,
+        rgba(139, 92, 246, 0.1) 100%);
+      opacity: 0;
+      transition: var(--transition-smooth);
+      z-index: -1;
+    }
+
+    .countdown__block:hover {
+      transform: translateY(-4px) scale(1.02);
+      border-color: rgba(212, 175, 55, 0.3);
+      box-shadow:
+        0 20px 40px rgba(0, 0, 0, 0.3),
+        0 0 60px var(--color-card-glow);
+    }
+
+    .countdown__block:hover::before {
+      opacity: 1;
+    }
+
+    .countdown__number {
+      font-size: var(--font-size-number);
+      font-weight: 700;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: 'tnum' 1;
+      background: linear-gradient(180deg,
+        var(--color-text-primary) 0%,
+        rgba(255, 255, 255, 0.8) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      position: relative;
+      min-width: 2ch;
+      text-align: center;
+    }
+
+    .countdown__number-inner {
+      display: inline-block;
+      transition: transform 0.15s ease-out, opacity 0.15s ease-out;
+    }
+
+    .countdown__number-inner.flip {
+      animation: numberFlip 0.3s ease-out;
+    }
+
+    @keyframes numberFlip {
+      0% { transform: translateY(-20%) scale(1.1); opacity: 0; }
+      100% { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    .countdown__label {
+      margin-top: 0.75rem;
+      font-size: var(--font-size-label);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--color-text-label);
+    }
+
+    /* Separator */
+    .countdown__separator {
+      font-size: clamp(2rem, 6vw, 4rem);
+      font-weight: 300;
+      color: var(--color-text-muted);
+      opacity: 0.3;
+      align-self: flex-start;
+      margin-top: calc(var(--spacing-card) + 0.5rem);
+    }
+
+    @media (max-width: 600px) {
+      .countdown__separator {
+        display: none;
+      }
+
+      .countdown {
+        gap: 0.75rem;
+      }
+
+      .countdown__block {
+        flex: 1 1 calc(50% - 0.5rem);
+        max-width: calc(50% - 0.5rem);
+      }
+    }
+
+    /* ==========================================================================
+       Ambient Message
+       ========================================================================== */
+    .ambient {
+      margin-top: 3rem;
+      text-align: center;
+      opacity: 0.5;
+      transition: var(--transition-smooth);
+    }
+
+    .ambient:hover {
+      opacity: 0.8;
+    }
+
+    .ambient__text {
+      font-size: var(--font-size-ambient);
+      font-weight: 400;
+      color: var(--color-text-muted);
+      letter-spacing: 0.05em;
+    }
+
+    .ambient__timezone {
+      margin-top: 0.5rem;
+      font-size: 0.7rem;
+      color: var(--color-text-label);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+    }
+
+    /* ==========================================================================
+       Celebration Overlay
+       ========================================================================== */
+    .celebration {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(10, 10, 15, 0.95);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 1s ease, visibility 1s ease;
+    }
+
+    .celebration.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .celebration__message {
+      text-align: center;
+      transform: scale(0.8);
+      opacity: 0;
+      transition: transform 1s cubic-bezier(0.34, 1.56, 0.64, 1),
+                  opacity 1s ease;
+    }
+
+    .celebration.active .celebration__message {
+      transform: scale(1);
+      opacity: 1;
+      transition-delay: 0.5s;
+    }
+
+    .celebration__year {
+      font-size: clamp(4rem, 15vw, 10rem);
+      font-weight: 800;
+      background: linear-gradient(135deg,
+        var(--color-accent) 0%,
+        #ffd700 50%,
+        var(--color-accent) 100%);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: shimmer 3s ease-in-out infinite;
+      line-height: 1;
+    }
+
+    @keyframes shimmer {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .celebration__greeting {
+      font-size: clamp(1.5rem, 5vw, 3rem);
+      font-weight: 300;
+      color: var(--color-text-primary);
+      margin-top: 1rem;
+      letter-spacing: 0.1em;
+      opacity: 0.9;
+    }
+
+    /* Confetti Canvas */
+    .confetti-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 101;
+      pointer-events: none;
+    }
+
+    /* ==========================================================================
+       Accessibility
+       ========================================================================== */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* Screen reader only */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Animated Background -->
+  <div class="background" aria-hidden="true">
+    <div class="background__gradient"></div>
+    <div class="particles" id="particles"></div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="container" role="main">
+    <h1 class="sr-only">New Year 2026 Countdown</h1>
+
+    <!-- Countdown Display -->
+    <div class="countdown" role="timer" aria-live="polite" aria-atomic="true">
+      <div class="countdown__block">
+        <span class="countdown__number" aria-label="Days">
+          <span class="countdown__number-inner" id="days">00</span>
+        </span>
+        <span class="countdown__label">Days</span>
+      </div>
+
+      <span class="countdown__separator" aria-hidden="true">:</span>
+
+      <div class="countdown__block">
+        <span class="countdown__number" aria-label="Hours">
+          <span class="countdown__number-inner" id="hours">00</span>
+        </span>
+        <span class="countdown__label">Hours</span>
+      </div>
+
+      <span class="countdown__separator" aria-hidden="true">:</span>
+
+      <div class="countdown__block">
+        <span class="countdown__number" aria-label="Minutes">
+          <span class="countdown__number-inner" id="minutes">00</span>
+        </span>
+        <span class="countdown__label">Mins</span>
+      </div>
+
+      <span class="countdown__separator" aria-hidden="true">:</span>
+
+      <div class="countdown__block">
+        <span class="countdown__number" aria-label="Seconds">
+          <span class="countdown__number-inner" id="seconds">00</span>
+        </span>
+        <span class="countdown__label">Secs</span>
+      </div>
+    </div>
+
+    <!-- Ambient Message -->
+    <div class="ambient">
+    </div>
+  </main>
+
+  <!-- Celebration Overlay -->
+  <div class="celebration" id="celebration" aria-hidden="true">
+    <div class="celebration__message">
+      <div class="celebration__year">2026</div>
+      <div class="celebration__greeting">Happy New Year</div>
+    </div>
+  </div>
+
+  <!-- Confetti Canvas -->
+  <canvas class="confetti-canvas" id="confetti" aria-hidden="true"></canvas>
+
+  <script>
+    /**
+     * New Year 2026 Countdown
+     * Synchronized worldwide using UTC
+     */
+    (function() {
+      'use strict';
+
+      // =======================================================================
+      // Configuration
+      // =======================================================================
+      const TARGET_DATE = new Date(Date.UTC(2026, 0, 1, 0, 0, 0)); // Jan 1, 2026 00:00:00 UTC
+      const PARTICLE_COUNT = 50;
+
+      // =======================================================================
+      // DOM Elements
+      // =======================================================================
+      const elements = {
+        days: document.getElementById('days'),
+        hours: document.getElementById('hours'),
+        minutes: document.getElementById('minutes'),
+        seconds: document.getElementById('seconds'),
+        particles: document.getElementById('particles'),
+        celebration: document.getElementById('celebration'),
+        confetti: document.getElementById('confetti')
+      };
+
+      // Store previous values for change detection
+      const previousValues = {
+        days: null,
+        hours: null,
+        minutes: null,
+        seconds: null
+      };
+
+      // =======================================================================
+      // Floating Particles Background
+      // =======================================================================
+      function createParticles() {
+        const container = elements.particles;
+
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+          const particle = document.createElement('div');
+          particle.className = 'particle';
+
+          // Random positioning and animation
+          const left = Math.random() * 100;
+          const delay = Math.random() * 20;
+          const duration = 15 + Math.random() * 20;
+          const size = 1 + Math.random() * 2;
+          const opacity = 0.1 + Math.random() * 0.4;
+
+          particle.style.cssText = `
+            left: ${left}%;
+            width: ${size}px;
+            height: ${size}px;
+            opacity: ${opacity};
+            animation-delay: ${delay}s;
+            animation-duration: ${duration}s;
+          `;
+
+          container.appendChild(particle);
+        }
+      }
+
+      // =======================================================================
+      // Countdown Logic
+      // =======================================================================
+      function updateCountdown() {
+        const now = new Date();
+        const diff = TARGET_DATE - now;
+
+        // Check if countdown is complete
+        if (diff <= 0) {
+          setDisplayValue('days', '00');
+          setDisplayValue('hours', '00');
+          setDisplayValue('minutes', '00');
+          setDisplayValue('seconds', '00');
+          triggerCelebration();
+          return false; // Stop the countdown
+        }
+
+        // Calculate time components
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+        // Update display with animation
+        setDisplayValue('days', padZero(days));
+        setDisplayValue('hours', padZero(hours));
+        setDisplayValue('minutes', padZero(minutes));
+        setDisplayValue('seconds', padZero(seconds));
+
+        return true; // Continue the countdown
+      }
+
+      function padZero(num) {
+        return num.toString().padStart(2, '0');
+      }
+
+      function setDisplayValue(unit, value) {
+        const element = elements[unit];
+
+        if (previousValues[unit] !== value) {
+          element.textContent = value;
+
+          // Trigger flip animation
+          element.classList.remove('flip');
+          // Force reflow to restart animation
+          void element.offsetWidth;
+          element.classList.add('flip');
+
+          previousValues[unit] = value;
+        }
+      }
+
+      // =======================================================================
+      // Celebration Effects
+      // =======================================================================
+      let celebrationTriggered = false;
+
+      function triggerCelebration() {
+        if (celebrationTriggered) return;
+        celebrationTriggered = true;
+
+        // Show celebration overlay
+        elements.celebration.classList.add('active');
+        elements.celebration.setAttribute('aria-hidden', 'false');
+
+        // Start confetti
+        startConfetti();
+      }
+
+      // =======================================================================
+      // Confetti Animation
+      // =======================================================================
+      function startConfetti() {
+        const canvas = elements.confetti;
+        const ctx = canvas.getContext('2d');
+
+        // Set canvas size
+        function resizeCanvas() {
+          canvas.width = window.innerWidth;
+          canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Confetti particles
+        const confettiPieces = [];
+        const colors = ['#d4af37', '#ffd700', '#ff6b6b', '#4ecdc4', '#a855f7', '#ffffff'];
+
+        // Create confetti pieces
+        for (let i = 0; i < 200; i++) {
+          confettiPieces.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height - canvas.height,
+            w: 8 + Math.random() * 8,
+            h: 4 + Math.random() * 6,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            vx: (Math.random() - 0.5) * 4,
+            vy: 2 + Math.random() * 4,
+            rotation: Math.random() * 360,
+            rotationSpeed: (Math.random() - 0.5) * 10,
+            oscillationSpeed: 0.02 + Math.random() * 0.03,
+            oscillationDistance: 30 + Math.random() * 50,
+            phase: Math.random() * Math.PI * 2
+          });
+        }
+
+        let animationFrame;
+        let startTime = performance.now();
+
+        function animate(currentTime) {
+          const elapsed = (currentTime - startTime) / 1000;
+
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+          let activeCount = 0;
+
+          confettiPieces.forEach(piece => {
+            // Update position
+            piece.y += piece.vy;
+            piece.x += piece.vx + Math.sin(elapsed * piece.oscillationSpeed + piece.phase) * 0.5;
+            piece.rotation += piece.rotationSpeed;
+
+            // Check if still visible
+            if (piece.y < canvas.height + 50) {
+              activeCount++;
+
+              // Draw confetti piece
+              ctx.save();
+              ctx.translate(piece.x, piece.y);
+              ctx.rotate((piece.rotation * Math.PI) / 180);
+              ctx.fillStyle = piece.color;
+              ctx.globalAlpha = Math.min(1, (canvas.height - piece.y + 200) / 200);
+              ctx.fillRect(-piece.w / 2, -piece.h / 2, piece.w, piece.h);
+              ctx.restore();
+            }
+          });
+
+          // Continue animation if pieces are still visible
+          if (activeCount > 0 && elapsed < 15) {
+            animationFrame = requestAnimationFrame(animate);
+          }
+        }
+
+        animationFrame = requestAnimationFrame(animate);
+      }
+
+      // =======================================================================
+      // Animation Loop
+      // =======================================================================
+      let countdownActive = true;
+      let lastSecond = -1;
+
+      function tick() {
+        if (!countdownActive) return;
+
+        const now = new Date();
+        const currentSecond = now.getSeconds();
+
+        // Only update when second changes (optimization)
+        if (currentSecond !== lastSecond) {
+          countdownActive = updateCountdown();
+          lastSecond = currentSecond;
+        }
+
+        if (countdownActive) {
+          requestAnimationFrame(tick);
+        }
+      }
+
+      // =======================================================================
+      // Initialization
+      // =======================================================================
+      function init() {
+        // Create background particles
+        createParticles();
+
+        // Initial countdown update
+        updateCountdown();
+
+        // Start the animation loop
+        requestAnimationFrame(tick);
+
+        // Also use setInterval as a fallback for accuracy
+        setInterval(() => {
+          if (countdownActive) {
+            updateCountdown();
+          }
+        }, 1000);
+      }
+
+      // Start when DOM is ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+    })();
+  </script>
+</body>
+</html>
